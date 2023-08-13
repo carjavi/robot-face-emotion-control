@@ -11,6 +11,7 @@
          /emoji
          /js
          /css
+         /media
  */
 const express      = require('express');
 const http         = require('http');
