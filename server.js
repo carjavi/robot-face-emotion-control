@@ -59,12 +59,12 @@ wss.on('connection', function connection(ws,req) {
 
 
 server.listen(8080,function listening() {
-    console.log("weBBBB Web server Active listening on " + server.address().port) + "chromium";
+    console.log("Web server Active listening on " + server.address().port);
     ExecuteChromium();
 });
 
 function ExecuteChromium() {
-    exec("DISPLAY=:0 chromium-browser --app=http://192.168.100.19:8080 --kiosk &", function(error, stdout, stderr) {
+    exec("DISPLAY=:0 chromium-browser --app=http://localhost:8080 --kiosk", function(error, stdout, stderr) {
         console.log("stdout: " + stdout);
         console.log("stderr: " + stderr);
         if (error !== null) {
