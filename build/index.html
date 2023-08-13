@@ -1,0 +1,201 @@
+<html lang="en">
+
+<head>
+  <link rel="icon" type="/media/" href="favicon.png">
+  <link rel="stylesheet" type="text/css" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WEB GUI emoji-robot</title>
+  <!-- My JS files-->
+  
+</head>
+
+<body>
+  <div id="container">
+    <video id="Video" src="emoji/0.mp4" autoplay muted type="video/mp4">
+      <p>
+        To view this video please enable JavaScript, and consider upgrading to a
+        web browser that
+        <a href="https://videojs.com/html5-video-support/" target="_blank">
+          supports HTML5 video
+        </a>
+      </p>
+    </video>
+  </div>
+
+  <!-- para hacer prueba directamente desde el browser
+  <nav>
+    <input id="cmd" type="text" name="command" value="12">
+    <button id="emoji_face" onclick="face()">face</button>
+  </nav>
+  <p id="demo"></p>
+
+  -->
+  <script type="text/javascript">
+    /*****************************************
+    ********* WEB SOCKET
+    *******************************************/
+    var ws;
+    var webSocketURL = "ws://192.168.100.19:8080"; // URL del server "ws://192.168.1.89:8888"
+    ws = new WebSocket(webSocketURL); 
+    ws.onerror = () => console.log('WebSocket error');
+    ws.onopen = (e) => {
+      console.log('WebSocket connection established');
+    }
+      ws.onclose = () =>{
+      alert ("Connection closed");
+      console.log('WebSocket connection closed');
+      msg_alert = "WebSocket connection closed"; 
+      Sendlog();
+    } 
+    ws.onmessage = (e) => {
+      var event = JSON.parse(e.data);
+      console.log(event);
+      console.log(event.value);
+      face(event.value);
+    }
+  </script>
+
+
+
+
+  <script>
+ /*****************************************
+ ********* Animation emotions
+ *******************************************/
+ // Note: el autoplay funciona si el video se mutea, esto depende predeterminado por el navegador
+
+ 
+ const contenedor = document.getElementById("container");
+ contenedor.scrollTop = 600;
+ contenedor.scrollLeft = 1000;
+
+
+
+
+ let video = document.getElementById("Video");
+ 
+
+ //const scrollElement = document.querySelector("#Video")
+// scrollElement.addEventListener("scroll", event => {
+ // scrollElement.scrollTop = 0;
+ //}, { passive: true });
+
+//Video.scrollTop = 100;
+//Video.scrollLeft = 100;
+//video.scrollBy(100, 100);
+
+/*
+video.scroll({
+  top: 900,
+  left: 1000,
+});
+*/
+
+console.log("scroll_top",video.scrollTop + "scroll_left", video.scrollLeft);
+
+ let vdend = false; // bandera que determina el fin de un emoji
+ let i = 0; // subindice para iniciar secuencia de emoji
+ let flicker; 
+ let flickerRandom = 5000; // tiempo inicial para parpadeo 
+ var emoji_select; // variable para seleccionar emoji
+ var emoji_hold; // tiempo en que debe pemanecer un emoji antes de volver a cara de reposo
+ var emoji_sub; // sub-indice del video
+ var emoji_flicker=false; // activa el parpadeo despues que termine el emoji
+ 
+
+ console.log("started...");
+ 
+
+ /***********  events when end emoji **************/
+ video.onended = function() {
+   // hace funcionar la secuencia de 3 emoji cuando termina uno despues del otro
+   if(i==0){
+       vdend = false;
+   }else{
+       vdend = true;
+       emoji_seq(); // activa la secuencia
+   }
+
+   // Activa el parpadeo cuando se termina un emoji o secuencia de emojis
+   if(emoji_flicker== true){
+       emoji_flicker = false;
+       setTimeout(flickerAgain, (emoji_hold*1000)); 
+       function flickerAgain() {
+         flickers(); // random parpadeo 
+       }
+   }
+ }
+
+ /***********  flickers - Parpadeo aleatotio **********/
+ function flickers() {
+   clearInterval(flicker); //deterner el papadeo
+   flickerRandom = Math.floor(Math.random() * (13000-5000+1) + 5000); // Random Integer Between X and Y (Inclusive Y). esto para variar el tiempo del parpadeo. entre 13s a 5s.
+   //console.log(flickerRandom);
+   flicker = setInterval(flickers, flickerRandom); 
+   video.src = "emoji/0("+(Math.floor(Math.random() * 2) + 1) +").mp4"; // hace random para parpadear de 2 maneras diferente. randdom entre 1  y 2
+   video.load();
+   video.play(); 
+ }
+ // NOTA: clearInterval(flicker) // deterner el papadeo
+
+ flickers(); //----------------->>>>>>>> random parpadeo para que lo haga en el arranque pero no funciona
+ 
+
+ function emoji_seq() { /***** start sequence emojis ****/
+   if (i <= 3){        
+     if (vdend == true){
+         vdend = false;
+         i = i + 1;
+         if (i != 4){
+             video.src = "emoji/"+emoji_select+"("+i+").mp4";
+             video.load();
+             video.play(); 
+         }else{
+           i=0; // detiene la secuencia del emoji
+           setTimeout(flickerAgain, (emoji_hold*1000));
+           function flickerAgain() {
+             flickers(); // random parpadeo 
+           }
+         }
+     }
+   }
+ }
+
+ function emoji() {
+   emoji_flicker = true; // activa el parpadeo despues que termine el emoji
+   video.src = "emoji/"+emoji_select+"("+emoji_sub+").mp4";
+   video.load();
+   video.play();
+ }
+
+
+ function face(data) { // determina las expresiones en la cara dependiendo del comando que se ingrese
+   //video.stop();
+   clearInterval(flicker); // detiene el papadeo
+   i=0; // detiene la secuencia del emoji
+
+   //var DataCmd = document.getElementById('cmd');
+   var str = String(data);
+   //console.log(str);
+   emoji_select = str.substring(0,1);
+   emoji_hold = str.substring(1,2);
+   
+   // Run secuence emojis - formato 2 digitos
+   if (str.substring(2,3) == ""){  // verifica si hay un 3er digito, para verificar el formato del comando. (x,y) o (x,y,z)
+       vdend = true;
+       emoji_seq(); // corre secuencia de emoji
+   }else{
+     //Run one emoji - formato 3 digitos
+     emoji_sub = emoji_hold;
+     emoji_hold = str.substring(2,3); // reasigna el tiempo del emoji a la variable que le corresponde
+     emoji();
+   }
+ }
+
+  </script> 
+
+</body>
+</html>
+
