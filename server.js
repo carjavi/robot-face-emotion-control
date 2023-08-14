@@ -17,7 +17,7 @@ const express      = require('express');
 const http         = require('http');
 const WebSocket    = require('ws');
 const { exec } = require('child_process');
-var wsocket = null;
+
 
 const app=express();
 app.use(express.static(__dirname + '/build/'));
@@ -42,6 +42,7 @@ wss.on('connection', function connection(ws,req) {
 
         ws.on('close', function close() {
             console.log('disconnected');
+            console.log("Conected: ", wss.clients.size);
         });
 
         ws.on('message', function incoming(message) {
@@ -61,15 +62,5 @@ wss.on('connection', function connection(ws,req) {
 
 server.listen(8080,function listening() {
     console.log("Web server Active listening on " + server.address().port);
-    ExecuteChromium();
 });
 
-function ExecuteChromium() {
-    exec("DISPLAY=:0 chromium-browser --app=http://localhost:8080 --kiosk", function(error, stdout, stderr) {
-        console.log("stdout: " + stdout);
-        console.log("stderr: " + stderr);
-        if (error !== null) {
-            console.log("exec error: " + error);
-        }
-    });
-}

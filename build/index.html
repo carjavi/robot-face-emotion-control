@@ -37,7 +37,7 @@
     ********* WEB SOCKET
     *******************************************/
     var ws;
-    var webSocketURL = "ws://192.168.100.19:8080"; // URL del server "ws://192.168.1.89:8888"
+    var webSocketURL = "ws://localhost:8080"; // URL del server "ws://192.168.1.89:8888"
     ws = new WebSocket(webSocketURL); 
     ws.onerror = () => console.log('WebSocket error');
     ws.onopen = (e) => {

@@ -4,7 +4,7 @@
 
 <br>
 
-# Run 
+# Testing Mode Manual
 desde SSH /home/carjavi/GUI-face
 ```
 node server.js
@@ -23,6 +23,39 @@ node server.js
 > :memo: **Note:** Los videos están escalos con Adobe Premier a 600x400px, scale 73% position 310.0 / 200.0
 
 > :warning: **Warning:** El refrescamiento del browser afecta un poco la animación de la cara.
+
+# Run server on RPI at Startup
+Edit this file
+```
+sudo nano /etc/rc.local
+```
+And add this:
+```
+node /home/carjavi/GUI-face/server.js
+```
+
+# Open chromium full screen on RPI4 start up
+
+1. Hide mouse cursor
+```
+sudo apt-get install unclutter
+```
+
+2. Edit this file
+```
+sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
+```
+
+3. And add this:
+```
+@xset s off
+@xset -dpms
+@xset s noblank
+@chromium-browser --kiosk http://localhost:8080
+@unclutter -idle 0.1 -root
+```
+
+
 
 <br>
 
